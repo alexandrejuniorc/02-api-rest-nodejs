@@ -4,8 +4,6 @@ import { z } from 'zod'
 import { knex } from '../database'
 import { CheckSessionIdExists } from '../middlewares/check-session-id-exists'
 
-// Cookies <--> Formas da gente manter contexto entre requisições
-
 export async function transactionsRoutes(server: FastifyInstance) {
   server.get(
     '/',
@@ -49,8 +47,8 @@ export async function transactionsRoutes(server: FastifyInstance) {
 
       const summary = await knex('transactions')
         .where('session_id', sessionId)
-        .sum('amount', { as: 'amount' }) // "as" renomeia o nome da propriedade
-        .first() // no knex o retorno sempre vai ser um array à não ser que o first vá no final da query
+        .sum('amount', { as: 'amount' })
+        .first()
 
       return { summary }
     },

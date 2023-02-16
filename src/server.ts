@@ -7,10 +7,6 @@ const server = fastify()
 
 server.register(cookie)
 
-server.addHook('preHandler', async (request, response) => {
-  console.log(`${request.method} ${request.url}`)
-})
-
 server.register(transactionsRoutes, {
   prefix: 'transactions',
 })
