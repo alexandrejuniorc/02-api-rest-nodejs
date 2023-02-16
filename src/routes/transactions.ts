@@ -2,36 +2,59 @@ import { FastifyInstance } from 'fastify'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { knex } from '../database'
+import { CheckSessionIdExists } from '../middlewares/check-session-id-exists'
 
 // Cookies <--> Formas da gente manter contexto entre requisições
 
 export async function transactionsRoutes(server: FastifyInstance) {
-  server.get('/', async (request, response) => {
-    const transactions = await knex('transactions').select()
+  server.get(
+    '/',
+    { preHandler: [CheckSessionIdExists] },
+    async (request, response) => {
+      const { sessionId } = request.cookies
 
-    return { transactions }
-  })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select()
 
-  server.get('/:id', async (request, response) => {
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      return { transactions }
+    },
+  )
 
-    const { id } = getTransactionParamsSchema.parse(request.params)
+  server.get(
+    '/:id',
+    { preHandler: [CheckSessionIdExists] },
+    async (request, response) => {
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
 
-    const transaction = await knex('transactions').where('id', id).first()
+      const { id } = getTransactionParamsSchema.parse(request.params)
 
-    return { transaction }
-  })
+      const { sessionId } = request.cookies
 
-  server.get('/summary', async (request, response) => {
-    // no knex o retorno sempre vai ser um array à não ser que o first vá no final da query
-    const summary = await knex('transactions')
-      .sum('amount', { as: 'amount' }) // "as" renomeia o nome da propriedade
-      .first()
+      const transaction = await knex('transactions')
+        .where({ session_id: sessionId, id })
+        .first()
 
-    return { summary }
-  })
+      return { transaction }
+    },
+  )
+
+  server.get(
+    '/summary',
+    { preHandler: [CheckSessionIdExists] },
+    async (request, response) => {
+      const { sessionId } = request.cookies
+
+      const summary = await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'amount' }) // "as" renomeia o nome da propriedade
+        .first() // no knex o retorno sempre vai ser um array à não ser que o first vá no final da query
+
+      return { summary }
+    },
+  )
 
   server.post('/', async (request, response) => {
     const createTransactionBodySchema = z.object({
