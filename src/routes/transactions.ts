@@ -22,6 +22,15 @@ export async function transactionsRoutes(server: FastifyInstance) {
     return { transaction }
   })
 
+  server.get('/summary', async (request, response) => {
+    // no knex o retorno sempre vai ser um array à não ser que o first vá no final da query
+    const summary = await knex('transactions')
+      .sum('amount', { as: 'amount' }) // "as" renomeia o nome da propriedade
+      .first()
+
+    return { summary }
+  })
+
   server.post('/', async (request, response) => {
     const createTransactionBodySchema = z.object({
       title: z.string(),
