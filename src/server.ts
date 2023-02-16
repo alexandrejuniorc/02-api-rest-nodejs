@@ -1,11 +1,22 @@
 import fastify from 'fastify'
 import { knex } from './database'
+import crypto from 'node:crypto'
 
 const server = fastify()
 
 server.get('/hello', async () => {
-  const tables = await knex('sqlite_schema').select('*')
-  return tables
+  // const transaction = await knex('transactions')
+  //   .insert({
+  //     amount: 555,
+  //     id: crypto.randomUUID(),
+  //     title: 'Transação de teste especifica',
+  //   })
+  //   .returning('*')
+  // return transaction
+  const transactions = await knex('transactions')
+    .select('*')
+    .where('amount', 555)
+  return transactions
 })
 
 server
