@@ -4,6 +4,15 @@ import { z } from 'zod'
 import { knex } from '../database'
 import { CheckSessionIdExists } from '../middlewares/check-session-id-exists'
 
+//  Unitários: unidade da sua aplicação
+//  Integração: comunicação entre duas ou mais unidades
+//  e2e - ponta a ponta: simulam um usuário operando na nossa aplicação
+
+//  front-end: abre a página de login, digite o texto ale@rocketseat.com no campo ID email, clique no botão ....
+//  back-end: chamadas HTTP, websockets
+
+// Pirâmide de testes: E2E (Não dependem de nenhuma tecnologia, não dependem de arquitetura)
+
 export async function transactionsRoutes(server: FastifyInstance) {
   server.get(
     '/',
